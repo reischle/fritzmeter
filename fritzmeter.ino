@@ -1,13 +1,19 @@
 /*
-  Fritzbox Tacho
+  Fritzmeter
  
  This sketch connects to a Fritz!Box
  using an Arduino Wiznet Ethernet shield. 
  
  Circuit:
  * Ethernet shield attached to pins 10, 11, 12, 13
+ * Servos attached to pins 5 (receive rate) and 6 (transmit rate)
+ 
+ Credits:
+ Parts of the code are taken from the web client example code by David A. Mellis
+ The XML parsing is adapted from Bob S. aka XTALKER's weather data XML extractor.
  
  created 20 Mar 2012
+ last modified Mar 23 2012
  by A. Reischle
  www.reischle.net
  
@@ -30,17 +36,13 @@ byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 // IP address for remote Server
 IPAddress server(192,168,1,1); // FritzBox
 
-// weil dumm und faul sind alle Variablen global
-String a; //da soll der Wert in spitzen Klammern rein
-int r=5; //reinschreiben oder nicht
+// most variables are global for convenience
 String nsb; //newSentBytes
 String nrb; //nweReceiveBytes
 unsigned long nsbl; //bits per second send
 unsigned long nrbl; //bits persecond received
 int rxservo=0;
 int txservo=0;
-char c; //Da kommt das einzelne Zeichen rein
-char carray[30];
 
 String xml="<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<s:Body>\n<u:GetAddonInfos xmlns:u=\"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1\" />\n</s:Body>\n</s:Envelope>";
 
@@ -58,13 +60,15 @@ boolean dataFlag = false;
 
 // Initialize the Ethernet client library
 // with the IP address and port of the server 
-// that you want to connect to (port 80 is default for HTTP):
+
 EthernetClient client;
 
 void setup()
 {
 // start the serial library:
   Serial.begin(9600);
+  
+   
 srxservo.attach(5);
 stxservo.attach(6);
 }
@@ -79,7 +83,26 @@ void loop()
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
-   Serial.println("connecting...");
+ 
+ // print your local IP address:
+  Serial.print("My IP address: ");
+  for (byte thisByte = 0; thisByte < 4; thisByte++) {
+    // print the value of each byte of the IP address:
+    Serial.print(Ethernet.localIP()[thisByte], DEC);
+    Serial.print("."); 
+  }
+  Serial.println();
+
+ // print your local Gateway address:
+  Serial.print("My Gateway address: ");
+  for (byte thisByte = 0; thisByte < 4; thisByte++) {
+    // print the value of each byte of the IP address:
+    Serial.print(Ethernet.gatewayIP()[thisByte], DEC);
+    Serial.print("."); 
+  }
+  Serial.println();
+
+ Serial.println("connecting...");
    
    // make the request to the server
    
