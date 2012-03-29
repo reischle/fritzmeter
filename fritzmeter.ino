@@ -78,8 +78,9 @@ void loop()
  if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // no point in carrying on, so do nothing forevermore:
-    for(;;)
-      ;
+    //for(;;)
+    //  ;
+    softReset();
   }
   // give the Ethernet shield a second to initialize:
   delay(1000);
@@ -124,8 +125,9 @@ void loop()
   else {
     // no connection to the server:
     Serial.println("connection failed in requesttraffic");
-	for(;;)
-      ;
+	//for(;;)
+        //;
+        softReset();
   }
    
    //wait for the server to answer
@@ -213,7 +215,7 @@ void serialEvent() {
               nsbl = strtoul(dataStr,NULL,0);
               nsbl=nsbl*8; //mach bits draus
               Serial.println(nsbl);
-              txservo=map(nsbl,0,733000,180,1);
+              txservo=map(nsbl,0,733000,179,1);
               Serial.print("Servo TX value: ");
               Serial.println(txservo);
               stxservo.write(txservo);
@@ -225,7 +227,7 @@ void serialEvent() {
               nrbl = strtoul(dataStr,NULL,0);
               nrbl=nrbl*8;  //mach bits
               Serial.println(nrbl);
-              rxservo=map(nrbl,0,6906000,180,1);
+              rxservo=map(nrbl,0,6906000,179,1);
               Serial.print("Servo RX value: ");
               Serial.println(rxservo);
               srxservo.write(rxservo);
@@ -292,5 +294,9 @@ boolean matchTag (char* searchTag) {
    }
 }
 
+// In case all goes wrong
+void softReset(){
+asm volatile ("  jmp 0");
+} 
 
  
