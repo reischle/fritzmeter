@@ -13,7 +13,7 @@
  The XML parsing is adapted from Bob S. aka XTALKER's weather data XML extractor.
  
  created 20 Mar 2012
- last modified Mar 23 2012
+ last modified Mar 30 2012
  by A. Reischle
  www.reischle.net
  
@@ -71,6 +71,7 @@ void setup()
    
 srxservo.attach(5);
 stxservo.attach(6);
+pinMode(13, OUTPUT);
 }
 
 void loop()
@@ -83,8 +84,10 @@ void loop()
     softReset();
   }
   // give the Ethernet shield a second to initialize:
+  digitalWrite(13, HIGH);
   delay(1000);
- 
+  digitalWrite(13, LOW);
+  
  // print your local IP address:
   Serial.print("My IP address: ");
   for (byte thisByte = 0; thisByte < 4; thisByte++) {
@@ -104,7 +107,7 @@ void loop()
   Serial.println();
 
  Serial.println("connecting...");
-   
+ digitalWrite(13, HIGH);
    // make the request to the server
    
    if (client.connect(server, 49000)) {
@@ -121,6 +124,7 @@ void loop()
     client.println(xml);
     client.println();
     Serial.println("Post request sent");
+    digitalWrite(13, LOW);
   } 
   else {
     // no connection to the server:
