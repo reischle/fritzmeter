@@ -231,7 +231,7 @@ void serialEvent() {
               nrbl = strtoul(dataStr,NULL,0);
               nrbl=nrbl*8;  //mach bits
               Serial.println(nrbl);
-              rxservo=map(nrbl,0,6906000,179,1);
+              rxservo=map(nrbl,0,6906000,1,179);
               Serial.print("Servo RX value: ");
               Serial.println(rxservo);
               srxservo.write(rxservo);
