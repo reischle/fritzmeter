@@ -1,8 +1,8 @@
 /*
   Fritzmeter
  
- This sketch connects to a Fritz!Box
- using an Arduino Wiznet Ethernet shield. 
+ This sketch connects to a Fritz!Box DSL router
+ using an Arduino Ethernet shield. 
  
  Circuit:
  * Ethernet shield attached to pins 10, 11, 12, 13
