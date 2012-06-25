@@ -13,7 +13,7 @@
  The XML parsing is adapted from Bob S. aka XTALKER's weather data XML extractor.
  
  created 20 Mar 2012
- last modified Mar 30 2012
+ last modified Jun 25 2012
  by A. Reischle
  www.reischle.net
  
@@ -29,12 +29,8 @@ Servo srxservo;
 Servo stxservo;
 
 
-
 // MAC address for controller.
 byte mac[] = {  0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
-
-// IP address for remote Server
-IPAddress server(192,168,1,1); // FritzBox
 
 // most variables are global for convenience
 String nsb; //newSentBytes
@@ -99,23 +95,20 @@ void loop()
 
  // print your local Gateway address:
   Serial.print("My Gateway address: ");
-  for (byte thisByte = 0; thisByte < 4; thisByte++) {
-    // print the value of each byte of the IP address:
-    Serial.print(Ethernet.gatewayIP()[thisByte], DEC);
-    Serial.print("."); 
-  }
-  Serial.println();
+  Serial.println(Ethernet.gatewayIP());
 
  Serial.println("connecting...");
  digitalWrite(13, HIGH);
    // make the request to the server
    
-   if (client.connect(server, 49000)) {
+   if (client.connect(Ethernet.gatewayIP(), 49000)) {
     Serial.println("connected");
     // Make a HTTP POST request:
     Serial.println("Sending POST request");
     client.println("POST /upnp/control/WANIPConn1 HTTP/1.1");
-    client.println("HOST: 192.168.1.1:49000");
+    client.print("HOST: ");
+    client.print(Ethernet.gatewayIP());
+    client.println(":49000");
     client.println("SOAPACTION: \"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1#GetAddonInfos\"");
     client.println("Content-Type: text/xml; charset=\"utf-8\"");
     client.print("Content-Length: ");
@@ -304,3 +297,4 @@ asm volatile ("  jmp 0");
 } 
 
  
+
