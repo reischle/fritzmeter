@@ -13,7 +13,7 @@
  The XML parsing is adapted from Bob S. aka XTALKER's weather data XML extractor.
  
  created 20 Mar 2012
- last modified Jun 25 2012
+ last modified Dec 14 2012
  by A. Reischle
  www.reischle.net
  
@@ -68,17 +68,19 @@ void setup()
 srxservo.attach(5);
 stxservo.attach(6);
 pinMode(13, OUTPUT);
-}
 
-void loop()
-{
- if (Ethernet.begin(mac) == 0) {
+if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // no point in carrying on, so do nothing forevermore:
     //for(;;)
     //  ;
     softReset();
   }
+}
+
+void loop()
+{
+ 
   // give the Ethernet shield a second to initialize:
   digitalWrite(13, HIGH);
   delay(1000);
