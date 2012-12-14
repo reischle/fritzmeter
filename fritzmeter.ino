@@ -40,8 +40,10 @@ unsigned long nrbl; //bits persecond received
 int rxservo=0;
 int txservo=0;
 
+//String to read current traffic counters
 String xml="<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<s:Body>\n<u:GetAddonInfos xmlns:u=\"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1\" />\n</s:Body>\n</s:Envelope>";
-
+//String to read max DSL speed
+String getmaxspeed="<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<s:Body>\n<u:GetCommonLinkProperties xmlns:u=\"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1\" />\n</s:Body>\n</s:Envelope>";
 
 // Setup vars for serialEvent
 char tagStr[MAX_STRING_LEN] = "";
@@ -69,18 +71,19 @@ srxservo.attach(5);
 stxservo.attach(6);
 pinMode(13, OUTPUT);
 
-if (Ethernet.begin(mac) == 0) {
+//Read max DSL speeds for up- and downstream
+
+}
+
+void loop()
+{
+ if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
     // no point in carrying on, so do nothing forevermore:
     //for(;;)
     //  ;
     softReset();
   }
-}
-
-void loop()
-{
- 
   // give the Ethernet shield a second to initialize:
   digitalWrite(13, HIGH);
   delay(1000);
@@ -299,4 +302,5 @@ asm volatile ("  jmp 0");
 } 
 
  
+
 
