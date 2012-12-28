@@ -16,7 +16,7 @@
  
  created 20 Mar 2012
  
- last modified Dec 28 2012 - Release version
+ last modified Dec 29 2012 - Release version
  by A. Reischle
  www.reischle.net
  
@@ -435,9 +435,6 @@ void netread(int fselector)
   
   //get data
   while (client.available()) {
-    //char c = client.read();
-    //delay(1);
-    //Serial.print(c);
 	serialEvent();
    }
      
