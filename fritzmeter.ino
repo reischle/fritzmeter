@@ -2,7 +2,9 @@
   Fritzmeter
  
  This sketch connects to a Fritz!Box DSL router
- using an Arduino Ethernet shield. 
+ using an Arduino Ethernet shield.
+ Other UPNP capable routers might work as well but are untested.
+ Please let me know if you have tried any other routers. 
  
  Circuit:
  * Ethernet shield attached to pins 10, 11, 12, 13
@@ -14,7 +16,7 @@
  
  created 20 Mar 2012
  
- last modified Dec 21 2012 - Development version
+ last modified Dec 28 2012 - Release version
  by A. Reischle
  www.reischle.net
  
@@ -23,7 +25,6 @@
 #include <SPI.h>
 #include <Ethernet.h>
 #include <Servo.h>
-// #include <avr/pgmspace.h>
 
 
 #define MAX_STRING_LEN  35
@@ -50,10 +51,6 @@ int rxservo=0;
 int txservo=0;
 
 
-//const char currentbw[] PROGMEM = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<s:Body>\n<u:GetAddonInfos xmlns:u=\"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1\" />\n</s:Body>\n</s:Envelope>";
-// const char maxbw[] = "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<s:Body>\n<u:GetCommonLinkProperties xmlns:u=\"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1\" />\n</s:Body>\n</s:Envelope>";
-
-
 // Setup vars for serialEvent
 char tagStr[MAX_STRING_LEN] = "";
 char dataStr[MAX_STRING_LEN] = "";
@@ -76,47 +73,38 @@ void setup()
 // start the serial library:
   Serial.begin(9600);
  
- Serial.println("Fritzmeter 20121219/ARe");
+ Serial.println("Fritzmeter 20121228/ARe");
  Serial.println("Starting setup..."); 
    
+// Attach servos to pins 5 and 6
 srxservo.attach(5);
 stxservo.attach(6);
-// pinMode(13, OUTPUT);
+
 
 if (Ethernet.begin(mac) == 0) {
     Serial.println("Failed to configure Ethernet using DHCP");
-    // no point in carrying on, so do nothing forevermore:
-    //for(;;)
-    //  ;
     softReset();
   }
 
 
   // give the Ethernet shield a second to initialize:
-//  digitalWrite(13, HIGH);
   delay(1000);
-//  digitalWrite(13, LOW);
   
- // print your local IP address:
+ // print local IP address:
   Serial.print("My IP address: ");
-  for (byte thisByte = 0; thisByte < 4; thisByte++) {
-    // print the value of each byte of the IP address:
-    Serial.print(Ethernet.localIP()[thisByte], DEC);
-    Serial.print("."); 
-  }
-  Serial.println();
+  Serial.println(Ethernet.localIP());
+  
 
- // print your local Gateway address:
+ // print local Gateway address:
   Serial.print("My Gateway address: ");
   Serial.println(Ethernet.gatewayIP());
 
-// here we should read the bandwidth parameters
-
 // read maximum bandwidth values
+// Call the xml Processor to obtain maximum useable bandwidth
 netread(1); 
-Serial.print("The setup maxsendspeed:");
+Serial.print("DSL maxTXspeed:");
   Serial.println(mxtx);
-  Serial.print("The setup sees maxreadspeed:");
+  Serial.print("DSL maxRXspeed:");
   Serial.println(mxrx);
 
   
@@ -132,10 +120,24 @@ void loop()
 // Call the xml Processor to obtain currently used bandwidth
   netread(2);  
   
+  //Display Send Speed
   Serial.print("The main loop sees sendspeed:");
   Serial.println(nsbl);
+  txservo=map(nsbl,0,mxtx,179,1);
+  Serial.print("Servo TX value: ");
+  Serial.println(txservo);
+  stxservo.write(txservo);
+
+
+  //Display Receive Speed
   Serial.print("The main loop sees readspeed:");
   Serial.println(nrbl);
+  rxservo=map(nrbl,0,mxrx,1,179);
+  Serial.print("Servo RX value: ");
+  Serial.println(rxservo);
+  srxservo.write(rxservo);
+
+  
 
 }
 
@@ -218,12 +220,7 @@ void serialEvent() {
 	  if (matchTag("<NewByteSendRate>")) {
 	      Serial.print("TX: ");
               nsbl = strtoul(dataStr,NULL,0);
-              nsbl=nsbl*8; //mach bits draus
-              Serial.println(nsbl);
-              txservo=map(nsbl,0,mxtx,179,1);
-              Serial.print("Servo TX value: ");
-              Serial.println(txservo);
-              stxservo.write(txservo);
+              nsbl=nsbl*8; //convert bytes to bits
       }
 	  
 	 if (matchTag("<NewByteReceiveRate>")) {
@@ -231,18 +228,12 @@ void serialEvent() {
            // Serial.print(dataStr);
               nrbl = strtoul(dataStr,NULL,0);
               nrbl=nrbl*8;  //mach bits
-              Serial.println(nrbl);
-              rxservo=map(nrbl,0,mxrx,1,179);
-              Serial.print("Servo RX value: ");
-              Serial.println(rxservo);
-              srxservo.write(rxservo);
       }
       
 
 	 if (matchTag("<NewLayer1UpstreamMaxBitRate>"))
             {
-	      Serial.print("MaxTX: ");
-           // Serial.print(dataStr);
+	    //  Serial.print("MaxTX: ");
               mxtx = strtoul(dataStr,NULL,0);
             //  mxtx=mxtx*8;  //mach bits
             //  Serial.println(mxtx);
@@ -250,7 +241,7 @@ void serialEvent() {
 
 	 if (matchTag("<NewLayer1DownstreamMaxBitRate>"))
             {
-	      Serial.print("MaxRX: ");
+	    //  Serial.print("MaxRX: ");
            // Serial.print(dataStr);
               mxrx = strtoul(dataStr,NULL,0);
             //  mxrx=mxrx*8;  //mach bits
@@ -402,8 +393,8 @@ void netread(int fselector)
     // With fselector set to 1 we request the maximum possible DSL bandwidth
     if (fselector==1)
       {
- Serial.print("fselector ist auf: ");
- Serial.println(fselector); 
+ // Serial.print("fselector ist auf: ");
+ // Serial.println(fselector); 
         // client.println("309");
       client.println("292");
       client.println();
@@ -413,8 +404,8 @@ void netread(int fselector)
     // With fselector 2 we read the currently consumed bandwidth
     if (fselector==2)
       {
- Serial.print("fselector ist auf: ");
- Serial.println(fselector); 
+ // Serial.print("fselector ist auf: ");
+ // Serial.println(fselector); 
       client.println("282");
       client.println();
       client.println(F("<?xml version=\"1.0\" encodin=\"utf-8\"?>\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\">\n<s:Body>\n<u:GetAddonInfos xmlns:u=\"urn:schemas-upnp-org:service:WANCommonInterfaceConfig:1\" />\n</s:Body>\n</s:Envelope>"));
@@ -437,7 +428,7 @@ void netread(int fselector)
    
    while (!client.available())
   {
-  Serial.println("Waiting for server...");
+  // Serial.println("Waiting for server...");
     ;
   }
   
