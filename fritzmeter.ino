@@ -16,7 +16,7 @@
  
  created 20 Mar 2012
  
- last modified Dec 28 2012 - Release version
+ last modified Dec 29 2012 - Development version
  by A. Reischle
  www.reischle.net
  
@@ -49,6 +49,8 @@ unsigned long mxtx; //max bits per second transmit
 
 int rxservo=0;
 int txservo=0;
+int currxservo=0;
+int curtxservo=180;
 
 
 // Setup vars for serialEvent
@@ -115,7 +117,7 @@ void loop()
 {
  
 //Not too hasty 
- delay(1000);
+// delay(1000);
    
 // Call the xml Processor to obtain currently used bandwidth
   netread(2);  
@@ -126,7 +128,7 @@ void loop()
   txservo=map(nsbl,0,mxtx,179,1);
   Serial.print("Servo TX value: ");
   Serial.println(txservo);
-  stxservo.write(txservo);
+  // stxservo.write(txservo);
 
 
   //Display Receive Speed
@@ -135,7 +137,9 @@ void loop()
   rxservo=map(nrbl,0,mxrx,1,179);
   Serial.print("Servo RX value: ");
   Serial.println(rxservo);
-  srxservo.write(rxservo);
+  // srxservo.write(rxservo);
+  
+  crawlservo();
 
   
 
@@ -151,6 +155,26 @@ void loop()
 // clean           //
 /////////////////////
 
+
+//////////////////////////////////////////////
+//  CrawlServo                              //
+// The Servos will slowly crawl towards     //
+// the target value for 2.5 seconds         //
+/////////////////////////////////////////////
+
+void crawlservo()
+{
+for (int i=0; i <= 50; i++)
+	{
+	if (currxservo < rxservo) currxservo++;
+	if (currxservo > rxservo) currxservo--;
+	if (curtxservo < txservo) curtxservo++;
+	if (curtxservo > txservo) curtxservo--;
+	stxservo.write(curtxservo);
+	srxservo.write(currxservo);
+	delay (50);
+	}
+}
 
 
 /////////////////////
