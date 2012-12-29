@@ -164,7 +164,7 @@ void loop()
 
 void crawlservo()
 {
-for (int i=0; i <= 50; i++)
+for (int i=0; i <= 100; i++)
 	{
 	if (currxservo < rxservo) currxservo++;
 	if (currxservo > rxservo) currxservo--;
@@ -172,7 +172,7 @@ for (int i=0; i <= 50; i++)
 	if (curtxservo > txservo) curtxservo--;
 	stxservo.write(curtxservo);
 	srxservo.write(currxservo);
-	delay (50);
+	delay (25);
 	}
 }
 
