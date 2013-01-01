@@ -14,10 +14,10 @@
  Parts of the code are taken from the web client example code by David A. Mellis
  The XML parsing is adapted from Bob S. aka XTALKER's weather data XML extractor.
  
- created 20 Mar 2012
+ Originally created 20 Mar 2012
  
- last modified Dec 29 2012 - Release version
- by A. Reischle
+ last modified Jan 01 2013 - release version
+ by Andy Reischle
  www.reischle.net
  
  */
@@ -49,6 +49,8 @@ unsigned long mxtx; //max bits per second transmit
 
 int rxservo=0;
 int txservo=0;
+int currxservo=0;
+int curtxservo=180;
 
 
 // Setup vars for serialEvent
@@ -73,7 +75,7 @@ void setup()
 // start the serial library:
   Serial.begin(9600);
  
- Serial.println("Fritzmeter 20121228/ARe");
+ Serial.println("Fritzmeter 20130101/ARe");
  Serial.println("Starting setup..."); 
    
 // Attach servos to pins 5 and 6
@@ -113,29 +115,28 @@ Serial.print("DSL maxTXspeed:");
 
 void loop()
 {
- 
-//Not too hasty 
- delay(1000);
    
 // Call the xml Processor to obtain currently used bandwidth
   netread(2);  
   
   //Display Send Speed
-  Serial.print("The main loop sees sendspeed:");
+  Serial.print("Current TX bits/s:");
   Serial.println(nsbl);
   txservo=map(nsbl,0,mxtx,179,1);
-  Serial.print("Servo TX value: ");
-  Serial.println(txservo);
-  stxservo.write(txservo);
+  // Serial.print("Servo TX value: ");
+  // Serial.println(txservo);
+  
 
 
   //Display Receive Speed
-  Serial.print("The main loop sees readspeed:");
+  Serial.print("Current RX bits/s:");
   Serial.println(nrbl);
   rxservo=map(nrbl,0,mxrx,1,179);
-  Serial.print("Servo RX value: ");
-  Serial.println(rxservo);
-  srxservo.write(rxservo);
+  //Serial.print("Servo RX value: ");
+  //Serial.println(rxservo);
+  
+  //to avoid jerky servo movements, let them crawl slowly towards the target value
+  crawlservo();
 
   
 
@@ -151,6 +152,26 @@ void loop()
 // clean           //
 /////////////////////
 
+
+//////////////////////////////////////////////
+//  CrawlServo                              //
+// The Servos will slowly crawl towards     //
+// the target value for 2.5 seconds         //
+/////////////////////////////////////////////
+
+void crawlservo()
+{
+for (int i=0; i <= 100; i++)
+	{
+	if (currxservo < rxservo) currxservo++;
+	if (currxservo > rxservo) currxservo--;
+	if (curtxservo < txservo) curtxservo++;
+	if (curtxservo > txservo) curtxservo--;
+	stxservo.write(curtxservo);
+	srxservo.write(currxservo);
+	delay (25);
+	}
+}
 
 
 /////////////////////
@@ -435,6 +456,9 @@ void netread(int fselector)
   
   //get data
   while (client.available()) {
+    //char c = client.read();
+    //delay(1);
+    //Serial.print(c);
 	serialEvent();
    }
      
