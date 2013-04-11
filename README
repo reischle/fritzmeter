@@ -1,10 +1,8 @@
-This project provides schematics, templates and software to build an arduino driven speedometer like bandwidth meter
-using cheap RC servos. Throughput bandwidth is read from a Fritz!Box router
-through its upnp web server.
+This project provides schematics, templates and software to build an arduino driven speedometer like bandwidth meter using cheap RC servos. Throughput bandwidth is read from a Fritz!Box router through its upnp web server.
 Materials needed:
 Arduino uno (tested with version R3)
 Arduino ethernet shield
-Two TowerPro SG90 Micro Servos
+Two TowerPro SG90 Micro Servos (or better ones)
 A ten centimeter diameter tin can with its lid carefully removed
 A ten centimeter diameter perspex disc.
 Some jumper cables.
